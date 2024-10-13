@@ -13,7 +13,7 @@ pub struct DtsParser {
 impl DtsParser {
     pub fn from_bytes(dts: &[u8]) -> Self {
         DtsParser {
-            dts: dts.clone().to_owned(),
+            dts: dts.to_owned(),
             next_phandle: 0,
             tree: DeviceTree::new(vec![], Node::new("/")),
         }
@@ -59,7 +59,7 @@ impl DtsParser {
                     }
 
                     if statement == "/dts-v1/" {
-                        println!("detected /dts-v1/;");
+                        // println!("detected /dts-v1/;");
                     } else if statement.starts_with("/memreserve/") {
                         let mut reservation = statement.split_ascii_whitespace();
                         let _ = reservation.next().unwrap();
@@ -75,10 +75,10 @@ impl DtsParser {
                         } else {
                             u64::from_str_radix(length, 10).unwrap()
                         };
-                        println!(
-                            "detected /memreserve/: address = {:#018x}, length = {:#018x}",
-                            address, length
-                        );
+                        // println!(
+                        //     "detected /memreserve/: address = {:#018x}, length = {:#018x}",
+                        //     address, length
+                        // );
                         self.tree
                             .reservations
                             .push(Arc::new(Mutex::new(Reservation::new(address, length))));
@@ -120,7 +120,7 @@ impl DtsParser {
                     // Found node
                     let sub_node_name =
                         &String::from(String::from_utf8_lossy(&text).to_string().trim());
-                    println!("found node {}", sub_node_name);
+                    // println!("found node {}", sub_node_name);
 
                     let (label, sub_node_name) = if sub_node_name.contains(":") {
                         let parts: Vec<&str> = sub_node_name.split(":").collect();
@@ -167,7 +167,7 @@ impl DtsParser {
                     // Found a property with value
                     let prop_name =
                         &String::from(String::from_utf8_lossy(&text).to_string().trim());
-                    println!("found property {} with value:", prop_name);
+                    // println!("found property {} with value:", prop_name);
                     i = i + 1;
                     let (property_value_size, property_value) =
                         self.parse_property_value(&dts[i..], node_only);
@@ -199,12 +199,12 @@ impl DtsParser {
                         if prop_name.starts_with("/") {
                             // A compiler directive
                             let directive = prop_name;
-                            println!("found directive: {directive}");
+                            // println!("found directive: {directive}");
                             let mut slices = directive.split_ascii_whitespace();
                             let instruction = slices.next().unwrap();
                             if instruction == "/delete-node/" {
                                 let sub_node_name = slices.next().unwrap();
-                                println!("delete node: {sub_node_name}");
+                                // println!("delete node: {sub_node_name}");
                                 let sub_node_index = node
                                     .lock()
                                     .unwrap()
@@ -215,7 +215,7 @@ impl DtsParser {
                                 node.lock().unwrap().sub_nodes.remove(sub_node_index);
                             } else if instruction == "/delete-property/" {
                                 let property_name = slices.next().unwrap();
-                                println!("delete property: {property_name}");
+                                // println!("delete property: {property_name}");
                                 let property_index = node
                                     .lock()
                                     .unwrap()
@@ -228,7 +228,7 @@ impl DtsParser {
                                 panic!("unknown comipler directive {directive}")
                             }
                         } else {
-                            println!("found property {} without value", prop_name);
+                            // println!("found property {} without value", prop_name);
                             let prop = Property::new_empty(&prop_name);
                             node.lock().unwrap().add_property(prop);
                         }
@@ -343,7 +343,7 @@ impl DtsParser {
 
     fn parse_property_value_cells(&mut self, text: &[u8]) -> Vec<u8> {
         let mut value: Vec<u8> = vec![];
-        println!("cells: {}", String::from_utf8_lossy(text));
+        // println!("cells: {}", String::from_utf8_lossy(text));
 
         for num in String::from_utf8_lossy(text).split_whitespace() {
             // A value could be in format:
@@ -403,15 +403,15 @@ impl DtsParser {
             for n in n_u8_vec {
                 value.push(n);
             }
-            println!("{:x}", n);
+            // println!("{:x}", n);
         }
         value
     }
 
     fn parse_property_value_bytes(text: &[u8]) -> Vec<u8> {
         let mut value: Vec<u8> = vec![];
-        println!("bytes: {}", String::from_utf8_lossy(text));
-        println!("bytes:");
+        // println!("bytes: {}", String::from_utf8_lossy(text));
+        // println!("bytes:");
         for num in String::from_utf8_lossy(text).split_whitespace() {
             let n = if num.starts_with("0x") {
                 u8::from_str_radix(&num[2..], 16).unwrap()
@@ -425,7 +425,7 @@ impl DtsParser {
     }
 
     fn parse_property_value_string(text: &[u8]) -> Vec<u8> {
-        println!("string: {}", String::from_utf8_lossy(text));
+        // println!("string: {}", String::from_utf8_lossy(text));
         let mut bytes = text.to_vec();
         // Append the terminator
         bytes.push(0);
@@ -460,7 +460,7 @@ impl DtsParser {
                     panic!("included file path error: {path}")
                 }
                 let path = &path[1..(path.len() - 1)];
-                println!("path: {path}");
+                // println!("path: {path}");
                 let included_dts = std::fs::read_to_string(path).unwrap();
                 let included_dts = DtsParser::pre_process(&included_dts, inclusion_depth - 1);
                 processed_dts.push_str(&included_dts);

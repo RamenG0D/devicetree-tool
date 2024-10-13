@@ -151,7 +151,7 @@ impl DtbParser {
         pos = pos + 1;
         // align to 4-bytes
         pos = (pos + 3) >> 2 << 2;
-        println!("Node name: {}, next pos = 0x{:x}", name, pos);
+        // println!("Node name: {}, next pos = 0x{:x}", name, pos);
         let mut node = Node::new(&name);
 
         while pos < struct_block.len() {
@@ -159,26 +159,26 @@ impl DtbParser {
             pos = pos + 4;
             match token {
                 0 => {
-                    println!("zeroed pedding at 0x{:x}", pos - 4);
+                    // println!("zeroed pedding at 0x{:x}", pos - 4);
                 }
                 1 => {
-                    println!("FDT_BEGIN_NODE at 0x{:x}", pos - 4);
+                    // println!("FDT_BEGIN_NODE at 0x{:x}", pos - 4);
                     let (node_len, sub_node) = self.parse_structure_node(&struct_block[pos..]);
                     pos = pos + node_len;
                     node.add_sub_node(sub_node);
                 }
                 2 => {
-                    println!("FDT_END_NODE at 0x{:x}", pos - 4);
+                    // println!("FDT_END_NODE at 0x{:x}", pos - 4);
                     return (pos, node);
                 }
                 3 => {
-                    println!("FDT_PROP at 0x{:x}", pos - 4);
+                    // println!("FDT_PROP at 0x{:x}", pos - 4);
                     let (prop_len, property) = self.parse_structure_prop(&struct_block[pos..]);
                     pos = pos + prop_len;
                     node.add_property(property);
                 }
                 4 => {
-                    println!("FDT_NOP at 0x{:x}", pos - 4);
+                    // println!("FDT_NOP at 0x{:x}", pos - 4);
                 }
                 _ => {
                     panic!("unknow token 0x{:x} at 0x{:x}", token, pos - 4)
@@ -197,10 +197,10 @@ impl DtbParser {
         let prop_data = &struct_block[pos..(pos + prop_len as usize)];
         pos = pos + prop_len as usize;
         pos = (pos + 3) >> 2 << 2;
-        println!(
-            "Property: name_pos 0x{:x}, len 0x{:x}, data {:#?}, next pos 0x{:x}",
-            prop_nameoff, prop_len, prop_data, pos
-        );
+        // println!(
+        //     "Property: name_pos 0x{:x}, len 0x{:x}, data {:#?}, next pos 0x{:x}",
+        //     prop_nameoff, prop_len, prop_data, pos
+        // );
         let prop_name = self.get_string(prop_nameoff);
         let property = Property::new_u8s(&prop_name, prop_data.to_owned());
         (pos, property)
